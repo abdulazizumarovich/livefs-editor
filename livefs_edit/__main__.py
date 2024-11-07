@@ -26,7 +26,7 @@ import yaml
 
 from livefs_edit import cli
 from livefs_edit.context import EditContext
-from livefs_edit.actions import ACTIONS
+from livefs_edit.actions import ACTIONS, current_dir
 
 
 HELP_TXT = """\
@@ -69,7 +69,9 @@ def main(argv=None):
         calls = []
         with open(argv[3]) as fp:
             spec = yaml.safe_load(fp)
-        print(spec)
+            current_dir[0] = (os.path.dirname(os.path.abspath(fp.name)))
+        print("yaml file in: ", current_dir[0])
+        print("content: ", spec)
         for action in spec:
             func = ACTIONS[action.pop('name')]
             calls.append((func, action))

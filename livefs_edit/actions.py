@@ -28,7 +28,7 @@ import subprocess
 from typing import List
 import yaml
 
-
+current_dir = [""]
 ACTIONS = {}
 
 
@@ -168,6 +168,8 @@ def shell(ctxt, command=None):
 def interpret_path(ctxt, path):
     if path.startswith('/'):
         return path
+    if path.startswith('./') and current_dir:
+        return str(pathlib.Path(current_dir[0]) / path[2:])
     if path.startswith('$LAYERS['):
         rbracket = path.find(']')
         if rbracket == -1 or path[rbracket + 1] != '/':
