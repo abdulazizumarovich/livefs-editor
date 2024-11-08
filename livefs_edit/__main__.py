@@ -30,17 +30,14 @@ from livefs_edit.actions import ACTIONS, current_dir
 
 
 HELP_TXT = """\
-# livefs-edit source.{iso,img} dest.{iso,img} [actions]
+# livefs-edit source.{iso,img} dest.{iso,img} [--os-name "Ubuntu Custom"] [actions]
 
 livefs-edit makes modifications to Ubuntu live ISOs and images.
 
 Actions include:
 """
 
-
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
+def check_args(argv):
     if '--help' in argv or len(argv) < 3:
         print(HELP_TXT)
         for action in sorted(ACTIONS.keys()):
@@ -48,10 +45,16 @@ def main(argv=None):
         print()
         sys.exit(0)
 
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    check_args(argv)
     debug = False
     if argv[0] == '--debug':
         debug = True
         argv.pop(0)
+        check_args(argv)
 
     sourcepath = argv[0]
     destpath = argv[1]
@@ -64,6 +67,16 @@ def main(argv=None):
         inplace = True
 
     ctxt = EditContext(sourcepath, debug=debug)
+
+    if argv[2] == '--os-name':
+        argv.pop(2)
+        check_args(argv)
+        os_name = argv[2]
+        argv.pop(2)
+        check_args(argv)
+        print("Target OS name: ", os_name)
+    else:
+        os_name = "Custom Linux"
 
     if argv[2] == '--action-yaml':
         calls = []
@@ -89,7 +102,7 @@ def main(argv=None):
             func(ctxt, **kw)
 
         if destpath is not None:
-            changed = ctxt.repack(destpath)
+            changed = ctxt.repack(destpath, os_name)
             if changed and inplace:
                 os.rename(destpath, sourcepath)
     except subprocess.CalledProcessError as cp:

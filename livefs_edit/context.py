@@ -307,7 +307,7 @@ class EditContext:
         self._source_overlay = self.add_overlay(
             source_mount, self.p('new/iso'))
 
-    def repack(self, destpath):
+    def repack(self, destpath, os_name):
         with self.logged("running repack hooks"):
             for hook in reversed(self._pre_repack_hooks):
                 hook()
@@ -315,12 +315,12 @@ class EditContext:
             self.log("no changes!")
             return False
         if self.source_fstype == 'iso9660':
-            self.repack_iso(destpath)
+            self.repack_iso(destpath, os_name)
         else:
             self.repack_generic(destpath)
         return True
 
-    def repack_iso(self, destpath):
+    def repack_iso(self, destpath, os_name):
         cp = self.run_capture([
             'xorriso',
             '-indev', self.source_path,
@@ -329,7 +329,7 @@ class EditContext:
         opts = shlex.split(cp.stdout)
         with self.logged("recreating ISO"):
             cmd = ['xorriso', '-as', 'mkisofs'] + opts + \
-                ['-o', destpath, '-V', 'Ubuntu custom', self.p('new/iso')] + \
+                ['-o', destpath, '-V', os_name, self.p('new/iso')] + \
                 self._xorriso_extra_args
             self.log("running: " + ' '.join(map(shlex.quote, cmd)))
             self.run(cmd)
